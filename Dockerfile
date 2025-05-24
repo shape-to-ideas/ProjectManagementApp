@@ -32,12 +32,6 @@ RUN npm install -g pm2
 RUN addgroup --system --gid 1001 nodegroup
 RUN adduser --system --uid 1001 appuser
 
-# Copy necessary files
-#COPY /app/public ./public
-#COPY /app/package.json ./package.json
-#COPY --chown=appuser:nodegroup /app/.next/standalone ./
-#COPY --chown=appuser:nodegroup /app/.next/static ./.next/static
-
 USER appuser
 
 # Expose the listening port

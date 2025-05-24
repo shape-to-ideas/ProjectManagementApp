@@ -5,12 +5,3 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      - website
