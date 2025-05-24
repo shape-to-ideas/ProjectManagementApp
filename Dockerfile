@@ -12,6 +12,7 @@ RUN npm i -g pnpm
 # Copy all files
 COPY . .
 
+COPY package*.json ./
 # Install dependencies
 RUN pnpm i
 
@@ -35,6 +36,7 @@ RUN addgroup --system --gid 1001 nodegroup
 RUN adduser --system --uid 1001 appuser
 
 # Copy necessary files
+COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/public ./public
 COPY --from=base /app/package.json ./package.json
 COPY --from=base --chown=appuser:nodegroup /app/.next/standalone ./
