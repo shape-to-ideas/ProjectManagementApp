@@ -21,6 +21,8 @@ RUN pnpm i
 RUN pnpm build
 
 # Stage 3: Production Runner
+FROM ${NODE} AS runner
+
 ENV NODE_ENV production
 ENV PORT 3000
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -32,10 +34,16 @@ RUN npm install -g pm2
 RUN addgroup --system --gid 1001 nodegroup
 RUN adduser --system --uid 1001 appuser
 
+# Copy necessary files
+COPY --from=base /app/public ./public
+COPY --from=base /app/package.json ./package.json
+COPY --from=base --chown=appuser:nodegroup /app/.next/standalone ./
+COPY --from=base --chown=appuser:nodegroup /app/.next/static ./.next/static
+
 USER appuser
 
 # Expose the listening port
 EXPOSE 3000
 
 # Start the application using PM2
-CMD ["pm2-runtime", "node", "--", ".next/standalone/server.js"]
+CMD ["pm2-runtime", "node", "--", "server.js"]
