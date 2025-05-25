@@ -16,14 +16,6 @@ COPY package*.json ./
 # Install dependencies
 RUN pnpm i
 
-## Stage 2: Build
-
-## Create build file
-RUN pnpm build
-
-# Stage 3: Production Runner
-FROM ${NODE} AS runner
-
 ENV NODE_ENV production
 ENV PORT 3000
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -31,11 +23,27 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Install PM2 globally
 RUN npm install -g pm2
 
+
+
+# Copy necessary files
+#COPY --from=base /app/node_modules ./node_modules
+#COPY --from=base /app/public ./public
+#COPY --from=base /app/package.json ./package.json
+#COPY --from=base --chown=appuser:nodegroup /app/.next/standalone ./
+
+# Stage 2: Build
+# Create build file
+RUN pnpm build
+
+# Stage 3: Production Runner
+FROM ${NODE} AS runner
+# Install PM2 globally
+RUN npm install -g pm2
+
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodegroup
 RUN adduser --system --uid 1001 appuser
 
-# Copy necessary files
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/public ./public
 COPY --from=base /app/package.json ./package.json
