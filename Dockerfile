@@ -12,10 +12,15 @@ RUN npm i -g pnpm
 # Copy all files
 COPY . .
 
-COPY package*.json ./
 # Install dependencies
 RUN pnpm i
 
+## Stage 2: Build
+
+## Create build file
+RUN pnpm build
+
+# Stage 3: Production Runner
 ENV NODE_ENV production
 ENV PORT 3000
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -23,32 +28,15 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Install PM2 globally
 RUN npm install -g pm2
 
-
-
-# Copy necessary files
-#COPY --from=base /app/node_modules ./node_modules
-#COPY --from=base /app/public ./public
-#COPY --from=base /app/package.json ./package.json
-#COPY --from=base --chown=appuser:nodegroup /app/.next/standalone ./
-
-# Stage 2: Build
-# Create build file
-RUN pnpm build
-
-# Stage 3: Production Runner
-FROM ${NODE} AS runner
-# Install PM2 globally
-RUN npm install -g pm2
-
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodegroup
 RUN adduser --system --uid 1001 appuser
 
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/public ./public
-COPY --from=base /app/package.json ./package.json
-COPY --from=base --chown=appuser:nodegroup /app/.next/standalone ./
-COPY --from=base --chown=appuser:nodegroup /app/.next/static ./.next/static
+# Copy necessary files
+#COPY /app/public ./public
+#COPY /app/package.json ./package.json
+#COPY --chown=appuser:nodegroup /app/.next/standalone ./
+#COPY --chown=appuser:nodegroup /app/.next/static ./.next/static
 
 USER appuser
 
@@ -56,4 +44,4 @@ USER appuser
 EXPOSE 3000
 
 # Start the application using PM2
-CMD ["pm2-runtime", "node", "--", "server.js"]
+CMD ["pm2-runtime", "node", "--", ".next/standalone/server.js"]
